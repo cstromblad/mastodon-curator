@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "mastodon-prune"
+version = "0.1.0"
+description = "Housekeeping for your Mastodon timeline, prune inactive accounts."
+authors = ["Christoffer Strömblad <github@x90.se>"]
+readme = "README.md"
+packages = [{include = "mastodon_prune"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+click = "^8.1.6"
+tqdm = "^4.65.0"
+requests = "^2.31.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
