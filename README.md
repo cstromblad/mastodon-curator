@@ -40,3 +40,7 @@ This will install a few necessary Python packages such as 'tqdm', 'requests' and
 
 Hopefully the rest should be self-explanatory.
 
+# TODO
+
+- Make BASE_URL a cmdline option instead, and get INSTANCE_NAME from this option instead of keeping it in the code. 
+- Add more "parameters" used to consider an account inactive, such as: "number of followers" the followed account has. (What else would be useful?)
