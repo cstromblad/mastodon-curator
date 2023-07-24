@@ -2,7 +2,7 @@
 
 Necessary DISCLAIMER. This code is provided as-is. I'm not a lawyer, which means I'm not quite sure what should be put here. But this code probably, and likely has bugs.
 
-In order to run this tool you'll need to create a "Mastodon Application" and through that get yourself an ACCESS_TOKEN. This is used to authenticate the tool. 
+In order to run this tool you'll need to create a "Mastodon Application" and through that get yourself an ACCESS_TOKEN. This is used to authenticate the tool.
 
 
 ## Instructions
@@ -16,6 +16,15 @@ In order to run this tool you'll need to create a "Mastodon Application" and thr
 - write:follows
 4. Save changes
 5. Copy 'Your access token' as you will need this when running the tool.
+
+Now you actually have to modify two things in prune.py:
+1. BASE_URL
+2. INSTANCE_NAME
+
+Change BASE_URL to the "home" address of your current instance, ie "https://infosec.exchange".
+Change INSTANCE_NAME to your current instance "infosec.exchange".
+
+Yeah, I realize as I read this how stupid this is. I will change this soon enough to make more sense. This is the first version of the prune tool.
 
 I'm using [Poetry](https://python-poetry.org/) to manage Python environments and packages, you should too.
 
