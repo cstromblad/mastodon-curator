@@ -20,6 +20,16 @@ I'm using [Poetry](https://python-poetry.org/) to manage Python environments and
 
 Assuming you've installed Poetry.
 
+You will also need to export two environment variables:
+
+- MASTODON_API_ACCESS_TOKEN
+- MASTODON_INSTANCE_URL
+
+You should set them to your ACCESS_TOKEN that you got from above, and add the name of your instance to the other variable. For example:
+- `export MASTODON_INSTANCE_URL="https://swecyb.com"`
+
+
+
 ## Curator Discover
 TBD
 
@@ -34,5 +44,4 @@ TBD
 Hopefully the rest should be self-explanatory.
 
 # TODO
-- Make BASE_URL a cmdline option instead, and get INSTANCE_NAME from this option instead of keeping it in the code. 
 - Add more "parameters" used to consider an account inactive, such as: "number of followers" the followed account has. (What else would be useful?)
