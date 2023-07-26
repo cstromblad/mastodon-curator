@@ -2,7 +2,7 @@
 
 Necessary DISCLAIMER. This code is provided as-is. I'm not a lawyer, which means I'm not quite sure what should be put here. But this code probably, and likely has bugs.
 
-In order to run this tool you'll need to create a "Mastodon Application" and through that get yourself an ACCESS_TOKEN. This is used to authenticate the tool.
+In order to run this tool you'll need to create a "Mastodon Application" and through that get yourself an ACCESS_TOKEN. This is used when authenticating against the Mastodon API using the tool.
 
 
 ## Instructions
@@ -40,3 +40,7 @@ This will install a few necessary Python packages such as 'tqdm', 'requests' and
 
 Hopefully the rest should be self-explanatory.
 
+# TODO
+
+- Make BASE_URL a cmdline option instead, and get INSTANCE_NAME from this option instead of keeping it in the code. 
+- Add more "parameters" used to consider an account inactive, such as: "number of followers" the followed account has. (What else would be useful?)
