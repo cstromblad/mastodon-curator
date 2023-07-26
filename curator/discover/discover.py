@@ -158,7 +158,10 @@ def discover_cli(hashtag,
     if 'MASTODON_API_ACCESS_TOKEN' in os.environ:
         access_token = os.environ['MASTODON_API_ACCESS_TOKEN']
 
-    api_session = api.MastodonAPI("https://swecyb.com", access_token)
+    if "MASTODON_INSTANCE_URL" in os.environ:
+        instance_url = os.environ['MASTODON_INSTANCE_URL']
+
+    api_session = api.MastodonAPI(instance_url, access_token)
 
     if follow_account:
         if dry_run:
