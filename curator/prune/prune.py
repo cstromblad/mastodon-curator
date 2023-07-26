@@ -1,35 +1,39 @@
-from datetime import datetime
-
+import logging
 import json
 import os
+
+from collections import Counter
+from datetime import datetime
 
 from tqdm import tqdm
 import click
 import requests
 
+from curator.masto_api import api
 
-BASE_URL = "https://swecyb.com"
-
-MAX_THREADS = 20
-
-INSTANCE_NAME = "swecyb.com"
 
 PRUNED_USERS_CSV = "pruned_passive_users"
 
+def api_bootstrap() -> (requests.Session, str):
 
-def verify_credentials(session) -> str:
-    """ If successful return ID of account """
+    try:
+        ACCESS_TOKEN = os.environ['MASTODON_API_ACCESS_TOKEN']
+    except KeyError:
+        print("Aborting, you have forgotten to set the MASTODON_API_ACCESS_TOKEN!")
+        exit(-1)
+    
+    headers = {'Authorization': f'Bearer {ACCESS_TOKEN}'}
+    
+    s = requests.Session()
+    s.headers = headers
 
-    URL = "/api/v1/accounts/verify_credentials"
+    account_id = verify_credentials(s)
 
-    response = session.get(BASE_URL + URL)
+    if not account_id:
+        print("Failed to verify credentials. Not sure why, perhaps you've set the wrong API_KEY?")
+        exit(-1)
 
-    jd = json.loads(response.text)
-
-    if response.status_code == 200:
-        return jd["id"]
-    else:
-        return ""
+    return (s, account_id)
 
 
 def account_following_count(api_session, account_id) -> int:
@@ -172,28 +176,12 @@ def save_pruned_users_as_csv(accounts,
             fd.write(f"{username},{show_boosts},{notify_on_posts},{languages}\n")
 
 
-def prune_accounts(for_realz, max_age):
+def prune_accounts(api_session, for_realz, max_age):
 
-    try:
-        ACCESS_TOKEN = os.environ['MASTODON_API_ACCESS_TOKEN']
-    except KeyError:
-        print("Aborting, you have forgotten to set the MASTODON_API_ACCESS_TOKEN!")
-        exit(-1)
-    
-    headers = {'Authorization': f'Bearer {ACCESS_TOKEN}'}
-    
-    s = requests.Session()
-    s.headers = headers
+    accounts = account_all_following(api_session, account_id)
 
-    account_id = verify_credentials(s)
+    logging.info(f'Accounts with no toots in ({max_age}) days will be considered inactive.')
 
-    if not account_id:
-        print("Failed to verify credentials. Not sure why, perhaps you've set the wrong API_KEY?")
-        exit(-1)
-
-    accounts = account_all_following(s, account_id)
-
-    print(f'Accounts with no toots in ({max_age}) days will be considered inactive.')
     passive_accounts = []
     for account in accounts:
         if consider_inactive_account(account['last_status_at'], max_age):
@@ -214,25 +202,18 @@ def prune_accounts(for_realz, max_age):
 
 
 @click.command(context_settings={"show_default": True})
-@click.option('--for-realz', default=False, help="Prune for realz?")
-@click.option('--dry-run', default=False, help="Perform dry-run, will output CSV of users that would be pruned.")
+@click.option('--dry-run', is_flag=True, default=True, help="Perform dry-run, will output CSV of users that would be pruned.")
 @click.option('--max-age', default=120, help="How long ago is, at most, an acceptable passive tooting time?")
-def main(for_realz, dry_run, max_age):
+def prune_cli(for_realz, dry_run, max_age, follow_account, unfollow_account):
+
+    api_session = api.MastodonAPI("https://swecyb.com", "CTWicHygcpmtgZgvHPMjzAgF9HCGipzS37JPAidc70I")
 
     if dry_run:
         print("Dry run only. Saving CSV of would-be-removed accounts.\n")
-        prune_accounts(False, max_age)
+        prune_accounts(api_session, max_age)
 
-    if for_realz:
+    else:
         response = input("Are you really sure? [yN] > ")
 
         if response.lower() == "y":
-            prune_accounts(True, max_age)
-
-
-if __name__ == "__main__":
-
-    main()
-
-    
-    
+            prune_accounts(api_session, max_age)

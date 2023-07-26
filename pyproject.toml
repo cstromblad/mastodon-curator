@@ -1,10 +1,9 @@
 [tool.poetry]
-name = "mastodon-prune"
+name = "curator"
 version = "0.1.0"
-description = "Housekeeping for your Mastodon timeline, prune inactive accounts."
+description = "Curate your timelines, discover people and hashtags."
 authors = ["Christoffer Strömblad <github@x90.se>"]
 readme = "README.md"
-packages = [{include = "mastodon_prune"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
