@@ -146,6 +146,7 @@ def accounts_tooting_about(api_session, hashtag, ntoots) -> list:
 @click.option('--follow-account', default=None, help="Which account should be followed?")
 @click.option('--unfollow-account', default=None, help="Which account should be unfollowed?")
 @click.option('--output-csv', is_flag=True, help="Output as importable CSV-file.")
+@click.option('--no-bots', is_flag=True, help="Exclude accounts identified as bots from output.")
 def discover_cli(hashtag,
                  ntoots, 
                  create_list, 
@@ -153,7 +154,8 @@ def discover_cli(hashtag,
                  dry_run, 
                  follow_account, 
                  unfollow_account,
-                 output_csv):
+                 output_csv,
+                 no_bots):
 
     if 'MASTODON_API_ACCESS_TOKEN' in os.environ:
         access_token = os.environ['MASTODON_API_ACCESS_TOKEN']
@@ -189,9 +191,21 @@ def discover_cli(hashtag,
             for account in accounts:
                 if utils.is_local_account(account['acct']):
                     account['acct'] = f"{account['acct']}@{api_session.instance_name}"
+
+                if no_bots:
+                    if account['bot']:
+                        accounts.remove(account)
+                        logging.debug(f'Bot account removed: "{account["acct"]}"')
+            
             usernames = [account['acct'] for account in accounts]
 
-            utils.write_mastodon_csv(f'{hashtag}_', usernames)        
+            if no_bots:
+                filename = f"{hashtag}_no_bots_"
+
+            else:
+                filename = f"{hashtag}_"
+            
+            utils.write_mastodon_csv(filename, usernames)        
 
     """
     toots = toots_from_tag(s, hashtag, ntoots)
