@@ -36,7 +36,7 @@ write:
 
 Create the application and at the top you now have an `Your access token` field available. Copy this value into an environment variable like this:
 
-`$ export MASTODON_API_ACCESS_TOKEN="<your token>"
+`$ export MASTODON_API_ACCESS_TOKEN="<your token>"`
 
 You also have to export the name of your instance like this:
 
