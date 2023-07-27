@@ -9,6 +9,7 @@ class MastodonAPI:
 
         self.is_bootstrapped = False
         self.instance_url = instance_url
+        self.instance_name = instance_url.split("://")[1]
         self.session = requests.Session()
         self.session.headers = {"Authorization": f"Bearer {access_token}"}
         self.account_id = None
@@ -26,7 +27,8 @@ class MastodonAPI:
             return False
 
         if response.status_code == 200:
-            logging.debug(f'Credentials validated successfully with return code {response.status_code}')
+            logging.debug(f'Credentials validated successfully with returncode \
+                {response.status_code}')
             self.account_id = jd['id']
             self.is_bootstrapped = True
 

@@ -11,3 +11,10 @@ def write_mastodon_csv(filename, usernames) -> None:
         for user in usernames:
             fd.write(f"{user},True,False,\n")
 
+
+def is_local_account(account) -> bool:
+
+    if "@" not in account:
+        return True
+
+    return False

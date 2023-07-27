@@ -121,7 +121,7 @@ def toots_from_tag(api_session,
             break
 
         all_toots.extend(toots)
-        logging.debug(f'Currently length of toots({len(all_toots)})')
+        logging.debug(f'Current length of toots({len(all_toots)})')
 
     return all_toots
 
@@ -183,6 +183,12 @@ def discover_cli(hashtag,
         accounts = accounts_tooting_about(api_session, hashtag, ntoots)
 
         if output_csv:
+            # Need to process usernames since "local" accounts will only show
+            # the username, not the instance name like: username@instance.name"
+
+            for account in accounts:
+                if utils.is_local_account(account['acct']):
+                    account['acct'] = f"{account['acct']}@{api_session.instance_name}"
             usernames = [account['acct'] for account in accounts]
 
             utils.write_mastodon_csv(f'{hashtag}_', usernames)        
