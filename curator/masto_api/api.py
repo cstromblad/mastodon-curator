@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 import requests
 
 
@@ -8,11 +9,39 @@ class MastodonAPI:
     def __init__(self, instance_url, access_token):
 
         self.is_bootstrapped = False
-        self.instance_url = instance_url
-        self.instance_name = instance_url.split("://")[1]
+
+        # Basic validation of URI schema.
+        m = re.match('https?://.*', instance_url)
+        if m:
+            self.instance_url = m.group()
+        else:
+            self._is_valid = False
+            self.instance_url = ""
+
+        # Trivial validation that instance_name is at least something that
+        # COULD be a valid domain-name, which is what an instance_name is.
+
+        self.instance_name = ""
+        
+        if self.instance_url:
+            instance_name = self.instance_url.split("://")[1]
+            m = re.match('.*..*', instance_name)
+            
+            if m:
+                self.instance_name = m.group()
+            else:
+                self._is_valid = False
+
         self.session = requests.Session()
         self.session.headers = {"Authorization": f"Bearer {access_token}"}
         self.account_id = None
+
+    def is_valid(self):
+
+        if self._is_valid:
+            return True
+
+        return False
 
     def validate_credentials(self) -> bool:
 
