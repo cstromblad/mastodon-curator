@@ -189,6 +189,11 @@ def discover_cli(hashtag,
             # the username, not the instance name like: username@instance.name"
 
             for account in accounts:
+                # First we remove any accounts wishing to be excluded from discovery.
+
+                if not account['discoverable']:
+                    logging.debug(f'Removed account: {account["acct"]} due to discoverability.')
+                    accounts.remove(account)
                 if utils.is_local_account(account['acct']):
                     account['acct'] = f"{account['acct']}@{api_session.instance_name}"
 

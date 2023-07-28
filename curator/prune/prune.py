@@ -122,14 +122,6 @@ def consider_inactive_account(last_toot, days=120) -> bool:
     return False
 
 
-def is_local_account(account) -> bool:
-
-    if "@" not in account:
-        return True
-
-    return False
-
-
 def prune_passive_accounts(api_session,
                            accounts):
 
