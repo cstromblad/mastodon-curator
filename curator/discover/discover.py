@@ -7,69 +7,10 @@ import requests
 
 from curator.masto_api import api
 from curator.utils import utils
+from curator.utils import output
 
 # curator discover --hashtag "threatintel" --create-list --named-list "ThreatIntel"
 
-
-def named_list_exists(api_session, named_list) -> bool:
-
-    API_ENDPOINT = f"{BASE_URL}/api/v1/lists"
-
-    response = api_session.get(API_ENDPOINT)
-
-    jd = json.loads(response.text)
-
-    for l in jd:
-
-        if named_list in l['title']:
-            return True
-    
-    return False
-
-
-def create_named_list(api_session, named_list) -> int:
-
-    API_ENDPOINT = f"{BASE_URL}/api/v1/lists"
-
-    data = json.dumps({'title': named_list})
-    response = api_session.post(API_ENDPOINT, json=data)
-
-    return response.status_code
-
-
-def get_named_list(api_session, named_list) -> dict:
-
-    if not named_list_exists(api_session, named_list):
-        create_named_list(api_session, named_list)
-
-    API_ENDPOINT = f"{BASE_URL}/api/v1/lists"
-
-    response = api_session.get(API_ENDPOINT)
-
-    if response.status_code == 200:
-        jd = json.loads(response.text)
-
-        for li in jd:
-
-            if named_list in li['title']:
-                return li
-
-    return {}
-
-
-def add_accounts_to_named_list(api_session, accounts, named_list) -> int:
-
-    li = get_named_list(api_session, named_list)
-
-    API_ENDPOINT = f"{BASE_URL}/api/v1/lists/{li['id']}/accounts"
-
-    ids = list(set([account['id'] for account in accounts]))
-
-    data = json.dumps({'account_ids': ids})
-    
-    response = api_session.post(API_ENDPOINT, json=data)
-    
-    return response.status_code
 
 def toots_from_page(api_session, hashtag, url=None) -> list:
 
@@ -140,98 +81,31 @@ def accounts_tooting_about(api_session, hashtag, ntoots) -> list:
 @click.command()
 @click.option('--hashtag', default=None, help="Discover accounts tooting about the specific hashtags.")
 @click.option('--ntoots', default=40, help="How many toots should we fetch?")
-@click.option('--create-list', is_flag=True, default=False, help="Should we create a list of users based on the search?")
-@click.option('--named-list', default=None, help="To which list should users be added?")
-@click.option('--dry-run', is_flag=True, help="Do everything... almost.")
-@click.option('--follow-account', default=None, help="Which account should be followed?")
-@click.option('--unfollow-account', default=None, help="Which account should be unfollowed?")
-@click.option('--output-csv', is_flag=True, help="Output as importable CSV-file.")
-@click.option('--no-bots', is_flag=True, help="Exclude accounts identified as bots from output.")
-def discover_cli(hashtag,
-                 ntoots, 
-                 create_list, 
-                 named_list, 
-                 dry_run, 
-                 follow_account, 
-                 unfollow_account,
-                 output_csv,
-                 no_bots):
-
+@click.pass_context
+def discover_cli(ctx,
+                 hashtag,
+                 ntoots):
+    ctx.obj['command'] = 'discover'
+    
     if 'MASTODON_API_ACCESS_TOKEN' in os.environ:
         access_token = os.environ['MASTODON_API_ACCESS_TOKEN']
+    else:
+        logging.error('Environment variable MASTODON_API_ACCESS_TOKEN is NOT present.')
+        return
 
     if "MASTODON_INSTANCE_URL" in os.environ:
         instance_url = os.environ['MASTODON_INSTANCE_URL']
-
-    api_session = api.MastodonAPI(instance_url, access_token)
-
-    if follow_account:
-        if dry_run:
-            logging.info(f'DRY-RUN > Would follow account: {follow_account}.')
-        else:
-            api_session.follow_account(follow_account)
+    else:
+        logging.error('Environment variable MASTODON_INSTANCE_URL is NOT present.')
         return 
 
-    elif unfollow_account:
-        if dry_run:
-            logging.info(f'Would unfollow account: {unfollow_account}.')
-        else:
-            api_session.unfollow_account(unfollow_account)
-
-        return
+    api_session = api.MastodonAPI(instance_url, access_token)
+    ctx.obj['api_session'] = api_session
 
     if hashtag:
         logging.info(f'Attempting to fetch accounts tooting about #{hashtag} (max: {ntoots} toots)')
-        accounts = accounts_tooting_about(api_session, hashtag, ntoots)
+        
+        accounts = accounts_tooting_about(api_session, hashtag, ntoots)        
 
-        if output_csv:
-            # Need to process usernames since "local" accounts will only show
-            # the username, not the instance name like: username@instance.name"
-
-            for account in accounts:
-                # First we remove any accounts wishing to be excluded from discovery.
-
-                if not account['discoverable']:
-                    logging.debug(f'Removed account: {account["acct"]} due to discoverability.')
-                    accounts.remove(account)
-                if utils.is_local_account(account['acct']):
-                    account['acct'] = f"{account['acct']}@{api_session.instance_name}"
-
-                if no_bots:
-                    if account['bot']:
-                        accounts.remove(account)
-                        logging.debug(f'Bot account removed: "{account["acct"]}"')
-            
-            usernames = [account['acct'] for account in accounts]
-
-            if no_bots:
-                filename = f"{hashtag}_no_bots_"
-
-            else:
-                filename = f"{hashtag}_"
-            
-            utils.write_mastodon_csv(filename, usernames)        
-
-    """
-    toots = toots_from_tag(s, hashtag, ntoots)
-
-    accounts = {}
-    follow_accounts = []
-    
-    for toot in toots:
-
-        account = toot['account']['acct']
-        if account in accounts:
-            accounts[account] += 1
-        else:
-            accounts[account] = 1
-
-        follow_accounts.append(toot['account'])
-
-    if create_list:
-        for account in follow_accounts:
-            follow_account(s, account['id'])
-
-        add_accounts_to_named_list(s, follow_accounts, named_list)
-
-    """
+        ctx.obj['hashtag'] = hashtag
+        ctx.obj['accounts'] = accounts

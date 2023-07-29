@@ -178,8 +178,11 @@ def prune_accounts(api_session, dry_run, max_age):
 @click.command(context_settings={"show_default": True})
 @click.option('--dry-run', is_flag=True, help="Perform dry-run, will output CSV of users that would be pruned.")
 @click.option('--max-age', default=120, help="How long ago is, at most, an acceptable passive tooting time?")
-def prune_cli(dry_run, max_age):
+@click.pass_context
+def prune_cli(ctx, dry_run, max_age):
 
+    ctx.obj['command'] = 'prune'
+    
     if "MASTODON_API_ACCESS_TOKEN" in os.environ:
         access_token = os.environ['MASTODON_API_ACCESS_TOKEN']
 

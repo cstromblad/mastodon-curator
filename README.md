@@ -68,4 +68,4 @@ Currently no other method besides "last toot" (max-age) can be used to determine
 
 ## Todo
 - Provide an `pip`-installable version of Curator.
-- Add an `--no-bots` flag to remove accounts identified as bots.
+- Rewrite the API-code and remove the accounts.py timelines.py separation, incorporate with MastodonAPI instead.

@@ -32,6 +32,7 @@ class MastodonAPI:
             else:
                 self._is_valid = False
 
+        self.access_token = access_token
         self.session = requests.Session()
         self.session.headers = {"Authorization": f"Bearer {access_token}"}
         self.account_id = None
@@ -64,33 +65,3 @@ class MastodonAPI:
             return True
 
         return False
-
-    def follow_account(self, account_id) -> dict:
-
-        API_ENDPOINT = f"/api/v1/accounts/{account_id}/follow"
-        
-        response = self.session.post(self.instance_url + API_ENDPOINT)
-
-        if response.status_code == 200:
-            logging.debug(f'Followed {account_id} successfully!')
-
-            return json.loads(response.text)
-        else:
-            logging.debug(f'Account NOT followed. Reason: {response.text}')
-
-        return {}
-
-    def unfollow_account(self, account_id) -> dict:
-
-        API_ENDPOINT = f"/api/v1/accounts/{account_id}/unfollow"
-        
-        response = self.session.post(self.instance_url + API_ENDPOINT)
-
-        if response.status_code == 200:
-            logging.debug(f'Unfollowed {account_id} successfully!')
-
-            return json.loads(response.text)
-        else:
-            logging.debug(f'Account NOT unfollowed. Reason: {response.text}')
-
-        return {}
