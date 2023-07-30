@@ -19,7 +19,7 @@ class TimelinesAPI(MastodonAPI):
 
         for named_list in jd:
 
-            if list_name in named_list['title']:
+            if list_name == named_list['title']:
                 return True
         
         return False
@@ -52,7 +52,7 @@ class TimelinesAPI(MastodonAPI):
 
             for li in jd:
 
-                if list_name in li['title']:
+                if list_name == li['title']:
                     return li
 
         return {}
@@ -79,4 +79,6 @@ class TimelinesAPI(MastodonAPI):
         if response.status_code == 200:
             return True
 
+        else:
+            logging.debug(f'Server said: {response.text}')
         return False

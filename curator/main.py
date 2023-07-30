@@ -2,6 +2,7 @@ import logging
 import os
 
 import click
+import redis
 
 from curator.discover import discover
 from curator.prune import prune
@@ -16,7 +17,7 @@ def cli(ctx, dry_run):
     ctx.ensure_object(dict)
 
     ctx.obj['dry_run'] = dry_run
-
+    ctx.obj['redis'] = redis.Redis(host='localhost', port=6379, db=0)
     # This variable contains a sort of "state" of the currently excuting
     # command. The idea is to convey what's going on to other modules/commands
     # such as the "output" subcommand.

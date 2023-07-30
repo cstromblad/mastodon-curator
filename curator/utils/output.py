@@ -49,6 +49,10 @@ def output_to_mastodon_list(ctx, list_name):
     for account in accounts:
         if not accounts_api.follow(account['id']):
             accounts.remove(account)
+            logging.debug(f'Removed account from accounts: {account}')
+
+            if account in accounts:
+                logging.debug('Accont NOT removed?!')
 
     # Finally we add them to the named list.
     timelines_api.add_accounts_to_list(accounts, list_name)
@@ -130,6 +134,7 @@ def manage_output(ctx,
             list_name = ctx.obj['hashtag']
 
         output_to_mastodon_list(ctx, list_name)
+
     elif output_format == "console":
         logging.info('Output format: console')
         output_to_console(ctx)
